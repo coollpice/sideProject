@@ -5,6 +5,8 @@ import com.blog.api.repository.PostRepository;
 import com.blog.api.request.PostCreate;
 import com.blog.api.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +19,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,15 +54,6 @@ class PostControllerTest {
     @BeforeEach
     void clean() {
         postRepository.deleteAll();
-    }
-
-    @Test
-    @DisplayName("/posts [GET] 요청 시 HelloWorld 출력.")
-    void getTest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/posts")) // 요청 방식 설정 [ GET, POST, PUT, DELETE 등 ]
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("Hello World"))
-                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
     }
 
     @Test
@@ -106,7 +103,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("/posts [GET] 글 단건조회")
+    @DisplayName("/posts/{postID} [GET] 글 단건조회")
     void getPost() throws Exception {
 
         //given
@@ -126,4 +123,48 @@ class PostControllerTest {
                 .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
     }
 
+
+    @Test
+    @DisplayName("/posts [GET] 글 여러 건 조회 페이징")
+    void getPosts() throws Exception {
+
+        //given
+        List<Post> requestPosts = IntStream.rangeClosed(1, 30)
+                .mapToObj(i -> Post.builder()
+                        .title("생성제목 " + i)
+                        .content("생성내용 " + i)
+                        .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts); // 게시글 일괄저장
+
+        //expected
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=1&size=10") //appication.yml 에서 page보정. 원래 default 는 page인덱스는 0
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.length()", Matchers.is(10)))
+                .andExpect(jsonPath("$.[0].title").value("생성제목 30"))
+                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
+    }
+
+    @Test
+    @DisplayName("/posts [GET] 글 여러 건 조회 페이징 0 입력 시 1페이지 표출")
+    void getPostsPage0() throws Exception {
+
+        //given
+        List<Post> requestPosts = IntStream.rangeClosed(1, 30)
+                .mapToObj(i -> Post.builder()
+                        .title("생성제목 " + i)
+                        .content("생성내용 " + i)
+                        .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts); // 게시글 일괄저장
+
+        //expected
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=0") //appication.yml 에서 page보정. 원래 default 는 page인덱스는 0
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.length()", Matchers.is(10)))
+                .andExpect(jsonPath("$.[0].title").value("생성제목 30"))
+                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
+    }
 }

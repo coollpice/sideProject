@@ -2,13 +2,17 @@ package com.blog.api.controller;
 
 import com.blog.api.domain.Post;
 import com.blog.api.request.PostCreate;
+import com.blog.api.request.PostSearch;
 import com.blog.api.response.PostResponse;
 import com.blog.api.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -17,10 +21,6 @@ public class PostController {
 
     private final PostService postService;
 
-    @GetMapping("/posts")
-    public String get() {
-        return "Hello World";
-    }
 
     /**
      * 글등록
@@ -42,5 +42,9 @@ public class PostController {
     public PostResponse getPost(@PathVariable Long postId) {
         return postService.getPost(postId);
     }
-    
+
+    @GetMapping("/posts")
+    public List<PostResponse> getPosts(PostSearch pageable) {
+        return postService.getList(pageable);
+    }
 }

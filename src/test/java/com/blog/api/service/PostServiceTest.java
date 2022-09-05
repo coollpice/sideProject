@@ -3,12 +3,21 @@ package com.blog.api.service;
 import com.blog.api.domain.Post;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.request.PostCreate;
+import com.blog.api.request.PostSearch;
 import com.blog.api.response.PostResponse;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +30,7 @@ class PostServiceTest {
     @Autowired
     private PostRepository postRepository;
 
-    @AfterEach
+    @BeforeEach
     void clean() {
         postRepository.deleteAll();
     }
@@ -39,7 +48,7 @@ class PostServiceTest {
 
         //when
         Post writePost = postService.write(postCreate);
-        Post findPost = postRepository.findById(1L).get();
+        Post findPost = postRepository.findAll().get(0);
 
         //then
         assertEquals(writePost.getTitle() , findPost.getTitle());
@@ -102,5 +111,55 @@ class PostServiceTest {
         assertEquals(writePost.getContent() , findPost.getContent());
 
     }
-    
+
+    @Test
+    @DisplayName("게시글 조회[페이징 - 5개]")
+    void getPosts() {
+
+        //given
+        List<Post> requestPosts = IntStream.rangeClosed(1, 30)
+                .mapToObj(i -> Post.builder()
+                            .title("생성제목 " + i)
+                            .content("생성내용 " + i)
+                            .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts); // 게시글 일괄저장
+
+        Pageable pageable = PageRequest.of(0,5, Sort.Direction.DESC, "id");
+
+        //when
+        List<PostResponse> findPosts = postService.getPosts(pageable);
+
+        //then
+        assertEquals(5,findPosts.size());
+        assertEquals("생성제목 30", findPosts.get(0).getTitle());
+        assertEquals("생성제목 26", findPosts.get(4).getTitle());
+
+    }
+
+    @Test
+    @DisplayName("게시글 조회[ Querydsl 페이징 - 10개]")
+    void getList() {
+
+        //given
+        List<Post> requestPosts = IntStream.rangeClosed(1, 30)
+                .mapToObj(i -> Post.builder()
+                        .title("생성제목 " + i)
+                        .content("생성내용 " + i)
+                        .build())
+                .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts); // 게시글 일괄저장
+
+        PostSearch postSearch = new PostSearch(1,10);
+
+        //when
+        List<PostResponse> findPosts = postService.getList(postSearch);
+
+        //then
+        assertEquals(10,findPosts.size());
+        assertEquals("생성제목 30", findPosts.get(0).getTitle());
+        assertEquals("생성제목 21", findPosts.get(9).getTitle());
+
+    }
+
 }
