@@ -3,6 +3,7 @@ package com.blog.api.controller;
 import com.blog.api.domain.Post;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.request.PostCreate;
+import com.blog.api.request.PostEdit;
 import com.blog.api.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.MatcherAssert;
@@ -165,6 +166,53 @@ class PostControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(jsonPath("$.length()", Matchers.is(10)))
                 .andExpect(jsonPath("$.[0].title").value("생성제목 30"))
+                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
+    }
+
+
+    @Test
+    @DisplayName("/posts [PATCH] 글 수정")
+    void editPost() throws Exception {
+
+        //given
+        Post createPost = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+        postRepository.save(createPost); // 게시글 일괄저장
+
+        PostEdit editPost = PostEdit.builder()
+                .title("수정제목")
+                .content("수정내용")
+                .build();
+
+        String editJson = objectMapper.writeValueAsString(editPost);
+
+        //expected
+        mockMvc.perform(MockMvcRequestBuilders.patch("/posts/{postId}",createPost.getId())
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(editJson))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(jsonPath("$.title").value("수정제목"))
+                .andExpect(jsonPath("$.content").value("수정내용"))
+                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
+    }
+
+    @Test
+    @DisplayName("/posts [DELETE] 글 삭제")
+    void deletePost() throws Exception {
+
+        //given
+        Post createPost = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+        postRepository.save(createPost);
+
+        //expected
+        mockMvc.perform(MockMvcRequestBuilders.delete("/posts/{postId}",createPost.getId())
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
     }
 }

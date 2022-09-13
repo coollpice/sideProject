@@ -1,8 +1,10 @@
 package com.blog.api.service;
 
 import com.blog.api.domain.Post;
+import com.blog.api.exception.PostNotFound;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.request.PostCreate;
+import com.blog.api.request.PostEdit;
 import com.blog.api.request.PostSearch;
 import com.blog.api.response.PostResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.blog.api.domain.Post.*;
 
 
 @Slf4j
@@ -28,7 +33,7 @@ public class PostService {
      * @return
      */
     public Post write(PostCreate postCreate) {
-        Post post = Post.builder()
+        Post post = builder()
                 .title(postCreate.getTitle())
                 .content(postCreate.getContent())
                 .build();
@@ -36,9 +41,14 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    /**
+     * 글 단건조회
+     * @param postId
+     * @return
+     */
     public PostResponse getPost(Long postId) {
         Post findPost = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("등록된 글이 없습니다."));
+                .orElseThrow(PostNotFound::new);
 
         PostResponse response = PostResponse.builder()
                 .id(findPost.getId())
@@ -69,6 +79,36 @@ public class PostService {
         return postRepository.getList(postSearch).stream()
                 .map(PostResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PostResponse edit(Long postId, PostEdit postEdit) {
+        Post findPost = postRepository.findById(postId)
+                .orElseThrow(PostNotFound::new);
+
+        /**
+         * 1. 생성자를 이용한 수정 - 넘겨야할 파라메터가 많을경우, 순서에 신경써야한다...
+         */
+//        findPost.update(postEdit.getTitle(), postEdit.getContent());
+
+        /**
+         * 2. 빌더패턴을 이용하여 적용
+         */
+        PostEditor.PostEditorBuilder postEditorBuilder = findPost.toEditor();
+        PostEditor editor = postEditorBuilder
+                .title(postEdit.getTitle())
+                .content(postEdit.getContent())
+                .build();
+
+        findPost.edit(editor);  // editor 객체를 넘겨서 수정
+
+        return new PostResponse(findPost);
+    }
+
+    public void delete(Long postId) {
+        Post post = postRepository.findById(postId)
+                        .orElseThrow(PostNotFound::new);
+        postRepository.delete(post);
     }
 
 }

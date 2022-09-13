@@ -1,8 +1,10 @@
 package com.blog.api.service;
 
 import com.blog.api.domain.Post;
+import com.blog.api.exception.PostNotFound;
 import com.blog.api.repository.PostRepository;
 import com.blog.api.request.PostCreate;
+import com.blog.api.request.PostEdit;
 import com.blog.api.request.PostSearch;
 import com.blog.api.response.PostResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -61,10 +63,16 @@ class PostServiceTest {
     void getPostException() {
 
         //given
-        Long postId = 1L;
+        Post post = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+
+        postRepository.save(post);
 
         //expected
-        assertThrows(IllegalArgumentException.class, () -> postService.getPost(postId));
+        PostNotFound ex = assertThrows(PostNotFound.class, () -> postService.getPost(post.getId() + 1L));
+        assertEquals("존재하지 않는 글입니다.", ex.getMessage());
 
     }
 
@@ -162,4 +170,49 @@ class PostServiceTest {
 
     }
 
+
+    @Test
+    @DisplayName("게시글 수정")
+    void postEdit() {
+
+        //given
+        Post createPost = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+        postRepository.save(createPost); // 게시글 일괄저장
+
+        PostEdit editPost = PostEdit.builder()
+                .title("수정제목")
+                .content("수정내용")
+                .build();
+        
+        //when
+        PostResponse resultPost = postService.edit(createPost.getId(), editPost);
+
+        //then
+        assertEquals(resultPost.getContent(), editPost.getContent());
+
+    }
+
+    @Test
+    @DisplayName("게시글 삭제")
+    void postDelete() {
+
+        //given
+        Post createPost = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+        postRepository.save(createPost);
+
+        //when
+        postService.delete(createPost.getId());
+
+        //then
+        assertEquals(0, postRepository.count());
+
+    }
+
+    
 }

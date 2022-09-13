@@ -2,6 +2,7 @@ package com.blog.api.controller;
 
 import com.blog.api.domain.Post;
 import com.blog.api.request.PostCreate;
+import com.blog.api.request.PostEdit;
 import com.blog.api.request.PostSearch;
 import com.blog.api.response.PostResponse;
 import com.blog.api.service.PostService;
@@ -44,7 +45,17 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public List<PostResponse> getPosts(PostSearch pageable) {
-        return postService.getList(pageable);
+    public List<PostResponse> getPosts(PostSearch postSearch) {
+        return postService.getList(postSearch);
+    }
+
+    @PatchMapping("/posts/{postId}")
+    public PostResponse edit(@PathVariable Long postId, @RequestBody @Valid PostEdit postEdit){
+        return postService.edit(postId, postEdit);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public void delete(@PathVariable Long postId) {
+        postService.delete(postId);
     }
 }
