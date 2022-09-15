@@ -214,5 +214,23 @@ class PostServiceTest {
 
     }
 
+    @Test
+    @DisplayName("게시글 삭제. 존재하지않을 시 예외")
+    void postDeleteException() {
+
+        //given
+        Post createPost = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+        postRepository.save(createPost);
+
+        //expected
+        assertThrows(PostNotFound.class, () -> postService.delete(createPost.getId() + 1L)
+    );
+
+
+
+    }
     
 }

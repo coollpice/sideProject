@@ -1,8 +1,11 @@
 package com.blog.api.controller;
 
+import com.blog.api.exception.ApplicationException;
+import com.blog.api.exception.PostNotFound;
 import com.blog.api.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,7 +28,22 @@ public class ExceptionController {
         for (FieldError fieldError : ex.getFieldErrors()) {
             errorResponse.addValidation(fieldError.getField() , fieldError.getDefaultMessage());
         }
-
         return errorResponse;
     }
+
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorResponse> applicationExceptionHandler(ApplicationException ex) {
+
+        int statusCode = ex.getStatusCode();
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(String.valueOf(statusCode))
+                .message(ex.getMessage())
+                .validateProp(ex.getValidation())
+                .build();
+
+        return ResponseEntity.status(statusCode)
+                .body(errorResponse);
+    }
+
 }

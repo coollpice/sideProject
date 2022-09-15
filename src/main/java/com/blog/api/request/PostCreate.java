@@ -1,6 +1,6 @@
 package com.blog.api.request;
 
-import lombok.AllArgsConstructor;
+import com.blog.api.exception.InvalidRequestException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,5 +23,10 @@ public class PostCreate {
         this.content = content;
     }
 
+    public void validate() {
+        if (this.title.contains("공격")) {
+            throw new InvalidRequestException("title", "제목에 공격이 포함될 수 없습니다.");
+        }
+    }
 
 }

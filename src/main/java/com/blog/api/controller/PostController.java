@@ -30,6 +30,7 @@ public class PostController {
      */
     @PostMapping("/posts")
     public Long post(@RequestBody @Valid PostCreate postCreate) {
+        postCreate.validate();
         Post savePost = postService.write(postCreate);
         return savePost.getId();
     }

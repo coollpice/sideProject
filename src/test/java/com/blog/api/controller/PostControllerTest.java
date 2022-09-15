@@ -215,4 +215,42 @@ class PostControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
     }
+
+    @Test
+    @DisplayName("/posts [DELETE] 글 삭제 - 없는 글 일 경우 예외")
+    void deletePostException() throws Exception {
+
+        //given
+        Post createPost = Post.builder()
+                .title("제목")
+                .content("내용")
+                .build();
+        postRepository.save(createPost);
+
+        //expected
+        mockMvc.perform(MockMvcRequestBuilders.delete("/posts/{postId}",createPost.getId() + 1L)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
+    }
+
+
+    @Test
+    @DisplayName("/posts [POST] 글 등록 - 글 등록 시 제목에 '공격'은 포함될 수 없다.")
+    void writePostValid() throws Exception {
+
+        //given
+        PostCreate postCreate = PostCreate.builder()
+                .title("공격하라!")
+                .content("내용입니다")
+                .build();
+        String postsCreateJson = objectMapper.writeValueAsString(postCreate);
+
+        //expected
+        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(postsCreateJson))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andDo(MockMvcResultHandlers.print()); // HTTP 정보 로그 찍기
+    }
 }
