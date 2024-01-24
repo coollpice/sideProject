@@ -53,8 +53,8 @@ class PostServiceTest {
         Post findPost = postRepository.findAll().get(0);
 
         //then
-        assertEquals(writePost.getTitle() , findPost.getTitle());
-        assertEquals(writePost.getContent() , findPost.getContent());
+        assertEquals(writePost.getTitle(), findPost.getTitle());
+        assertEquals(writePost.getContent(), findPost.getContent());
 
     }
 
@@ -93,8 +93,8 @@ class PostServiceTest {
 
         //then
         assertNotNull(findPost);
-        assertEquals(writePost.getTitle() , findPost.getTitle());
-        assertEquals(writePost.getContent() , findPost.getContent());
+        assertEquals(writePost.getTitle(), findPost.getTitle());
+        assertEquals(writePost.getContent(), findPost.getContent());
 
     }
 
@@ -116,7 +116,7 @@ class PostServiceTest {
         //then
         assertNotNull(findPost);
         assertEquals(10, findPost.getTitle().length());
-        assertEquals(writePost.getContent() , findPost.getContent());
+        assertEquals(writePost.getContent(), findPost.getContent());
 
     }
 
@@ -127,19 +127,19 @@ class PostServiceTest {
         //given
         List<Post> requestPosts = IntStream.rangeClosed(1, 30)
                 .mapToObj(i -> Post.builder()
-                            .title("생성제목 " + i)
-                            .content("생성내용 " + i)
-                            .build())
+                        .title("생성제목 " + i)
+                        .content("생성내용 " + i)
+                        .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts); // 게시글 일괄저장
 
-        Pageable pageable = PageRequest.of(0,5, Sort.Direction.DESC, "id");
+        Pageable pageable = PageRequest.of(0, 5, Sort.Direction.DESC, "id");
 
         //when
         List<PostResponse> findPosts = postService.getPosts(pageable);
 
         //then
-        assertEquals(5,findPosts.size());
+        assertEquals(5, findPosts.size());
         assertEquals("생성제목 30", findPosts.get(0).getTitle());
         assertEquals("생성제목 26", findPosts.get(4).getTitle());
 
@@ -158,13 +158,13 @@ class PostServiceTest {
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts); // 게시글 일괄저장
 
-        PostSearch postSearch = new PostSearch(1,10);
+        PostSearch postSearch = new PostSearch(1, 10);
 
         //when
         List<PostResponse> findPosts = postService.getList(postSearch);
 
         //then
-        assertEquals(10,findPosts.size());
+        assertEquals(10, findPosts.size());
         assertEquals("생성제목 30", findPosts.get(0).getTitle());
         assertEquals("생성제목 21", findPosts.get(9).getTitle());
 
@@ -186,7 +186,7 @@ class PostServiceTest {
                 .title("수정제목")
                 .content("수정내용")
                 .build();
-        
+
         //when
         PostResponse resultPost = postService.edit(createPost.getId(), editPost);
 
@@ -226,11 +226,7 @@ class PostServiceTest {
         postRepository.save(createPost);
 
         //expected
-        assertThrows(PostNotFound.class, () -> postService.delete(createPost.getId() + 1L)
-    );
-
-
-
+        assertThrows(PostNotFound.class, () -> postService.delete(createPost.getId() + 1L));
     }
-    
+
 }

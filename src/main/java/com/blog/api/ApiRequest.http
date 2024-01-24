@@ -1,16 +1,15 @@
 ###
-GET http://localhost:8080/post
+GET http://localhost:8085/test
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzA1OTkxOTE4fQ.bwOp6BFHvSwCQABX7WtSJMjeNdgJyrtaky4GKEQupWo
 
-
-###
-POST http://localhost:8080/post
+### 로그인 API
+POST http://localhost:8085/auth/login
 Content-Type: application/json
 
 {
-  "param1" : "param",
-  "param2" : "param"
+  "email" : "test@gmail.com",
+  "password" : "1234"
 }
 
-
-###
 

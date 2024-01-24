@@ -1,5 +1,7 @@
 package com.blog.api.controller;
 
+import com.blog.api.config.argumentresolver.LoginUser;
+import com.blog.api.config.data.UserSession;
 import com.blog.api.domain.Post;
 import com.blog.api.request.PostCreate;
 import com.blog.api.request.PostEdit;
@@ -23,20 +25,30 @@ public class PostController {
     private final PostService postService;
 
 
+    @GetMapping("/test")
+    public String test(@LoginUser UserSession userSession) {
+        return "test..?";
+    }
+
     /**
      * 글등록
+     *
      * @param postCreate
      * @return
      */
     @PostMapping("/posts")
-    public Long post(@RequestBody @Valid PostCreate postCreate) {
-        postCreate.validate();
-        Post savePost = postService.write(postCreate);
-        return savePost.getId();
+    public Long post(@RequestBody @Valid PostCreate postCreate/*, @RequestHeader String authorization*/) {
+//        if (authorization.equals("test")) {
+            postCreate.validate();
+            Post savePost = postService.write(postCreate);
+            return savePost.getId();
+//        }
+//        return null;
     }
 
     /**
      * 글 단건조회
+     *
      * @param postId
      * @return
      */
@@ -51,7 +63,7 @@ public class PostController {
     }
 
     @PatchMapping("/posts/{postId}")
-    public PostResponse edit(@PathVariable Long postId, @RequestBody @Valid PostEdit postEdit){
+    public PostResponse edit(@PathVariable Long postId, @RequestBody @Valid PostEdit postEdit) {
         return postService.edit(postId, postEdit);
     }
 

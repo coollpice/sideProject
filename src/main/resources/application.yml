@@ -1,4 +1,7 @@
 spring:
+  profiles:
+    active: local
+
   h2:
     console:
       enabled: true
@@ -15,6 +18,23 @@ spring:
       pageable:
         one-indexed-parameters: true
         default-page-size: 5
+  jpa:
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    org :
+      hibernate :
+        SQL : DEBUG
 
 server:
   port: 8085
+
+app-config:
+  jwt-key: "mS87YYBrwCPZR5y5qRaga9a3MztZlqV9YCE81QjFuu0="
+
+

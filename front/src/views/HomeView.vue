@@ -16,7 +16,6 @@ const getPosts = function () {
 };
 
 getPosts();
-
 </script>
 
 <template>
@@ -30,7 +29,6 @@ getPosts();
       </div>
     </li>
   </ul>
-
 </template>
 
 <style scoped>

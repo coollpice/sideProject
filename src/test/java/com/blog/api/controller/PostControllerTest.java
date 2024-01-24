@@ -90,6 +90,7 @@ class PostControllerTest {
 
         //when
         mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+                        .header("authorization", "test")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(postsCreateJson))
                 .andExpect(MockMvcResultMatchers.status().isOk())
